@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthUserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  DELETED
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  DELETED
+}
+
+enum ProfessionStatus {
+  STUDENT
+  EMPLOYEE
+  INTERN
+}
+
+model AuthUser {
+  id                         String         @id @default(uuid()) @db.Uuid
+  email                      String         @unique
+  firstName                  String         @db.VarChar(255)
+  lastName                   String         @db.VarChar(255)
+  state                      String         @db.VarChar(255)
+  country                    String         @db.VarChar(255)
+  city                       String         @db.VarChar(255)
+  password                   String?         @db.VarChar(255)
+  loginAttempt               Int?            @default(0)
+  isVerified                 Boolean?        @default(false)
+  status                     AuthUserStatus @default(PENDING)
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
+  roleId                     String?        @db.Uuid
+  role                       Role?          @relation(fields: [roleId], references: [id])
+  createdBy                  String?        @db.Uuid
+  verificationToken          String?
+  verificationTokenExpires   DateTime?
+  passwordResetToken         String?
+  passwordResetTokenExpires  DateTime?
+  forgotPasswordToken        String?
+  forgotPasswordTokenExpires DateTime?
+}
+
+model Role {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  createdBy String?    @db.Uuid
+  auth_user AuthUser[]
+  User      User[]
+}
+
+model Hostel {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @db.VarChar(255)
+  address     String     @db.VarChar(255)
+  zipcode     String     @db.VarChar(255)
+  city        String     @db.VarChar(255)
+  state       String     @db.VarChar(255)
+  country     String     @db.VarChar(255)
+  contact     String     @db.VarChar(255)
+  createdAt   DateTime   @default(now())
+  hostel_user User?
+  updatedAt   DateTime   @updatedAt
+  createdBy   String?    @db.Uuid
+  Feedback    Feedback[]
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  enrollNumber String     @db.VarChar(255)
+  password     String     @db.VarChar(255)
+  hostel       Hostel     @relation(fields: [hostelId], references: [id])
+  hostelId     String     @unique @db.Uuid
+  profile      Profile    @relation(fields: [profileId], references: [id])
+  profileId    String     @unique @db.Uuid
+  status       UserStatus @default(PENDING)
+  roleId       String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  isVerified   Boolean    @default(false)
+}
+
+model Profile {
+  id                String           @id @default(uuid()) @db.Uuid
+  firstName         String           @db.VarChar(255)
+  lastName          String           @db.VarChar(255)
+  email             String           @db.VarChar(255)
+  contact           String           @db.VarChar(255)
+  dateOfBirth       DateTime
+  gender            String           @db.VarChar(255)
+  user_profile      User?
+  city              String           @db.VarChar(255)
+  state             String           @db.VarChar(255)
+  country           String           @db.VarChar(255)
+  zipcode           String           @db.VarChar(255)
+  parentContact     String           @db.VarChar(255)
+  professionStatus  ProfessionStatus @default(STUDENT)
+  proofOfIdentity   String           @db.VarChar(255)
+  proofOfAddress    String           @db.VarChar(255)
+  proofOfProfession String           @db.VarChar(255)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  feedback  String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hostelId  String   @db.Uuid
+  hostel    Hostel   @relation(fields: [hostelId], references: [id])
+}
+
+model subscriptionPayment {
+  id        String   @id @default(uuid()) @db.Uuid
+  amount    Float
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
