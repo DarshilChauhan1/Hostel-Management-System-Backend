@@ -41,9 +41,13 @@ model AuthUser {
   state                      String         @db.VarChar(255)
   country                    String         @db.VarChar(255)
   city                       String         @db.VarChar(255)
-  password                   String?         @db.VarChar(255)
-  loginAttempt               Int?            @default(0)
-  isVerified                 Boolean?        @default(false)
+  password                   String?        @db.VarChar(255)
+  loginAttempt               Int?           @default(0)
+  isBlocked                  Boolean?       @default(false)
+  blockedAt                  DateTime?
+  blockedUntil               DateTime?
+  isVerified                 Boolean?       @default(false)
+  devicesLoggedIn            String[]
   status                     AuthUserStatus @default(PENDING)
   createdAt                  DateTime       @default(now())
   updatedAt                  DateTime       @updatedAt

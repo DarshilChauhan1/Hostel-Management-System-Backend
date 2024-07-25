@@ -7,24 +7,25 @@ import { ClsModule } from 'nestjs-cls';
 import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { PrismaService } from './prisma/prisma.service';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
-  imports: [AuthModule, PrismaModule,
-    ClsModule.forRoot({
-      plugins: [
-        new ClsPluginTransactional({
-          imports: [PrismaModule],
-          adapter: new TransactionalAdapterPrisma({
-            prismaInjectionToken: PrismaService
-          })
-        })
-      ],
-      middleware: { mount: true },
-      global: true
-    })
+  imports: [AuthModule, PrismaModule, MailModule,
+    // ClsModule.forRoot({
+    //   plugins: [
+    //     new ClsPluginTransactional({
+    //       imports: [PrismaModule],
+    //       adapter: new TransactionalAdapterPrisma({
+    //         prismaInjectionToken: PrismaService
+    //       })
+    //     })
+    //   ],
+    //   middleware: { mount: true },
+    //   global: true
+    // })
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule { }

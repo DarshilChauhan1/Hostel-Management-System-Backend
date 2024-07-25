@@ -37,3 +37,16 @@ export class CreateAuthDto {
     @IsNotEmpty()
     roleId : string;
 }
+
+
+export class LoginDto{
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    email : string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    password : string;
+}
