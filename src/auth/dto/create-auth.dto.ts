@@ -9,12 +9,12 @@ export class CreateAuthDto {
 
     @ApiProperty()
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     firstName : string;
 
     @ApiProperty()
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     lastName : string;
 
     @ApiProperty()

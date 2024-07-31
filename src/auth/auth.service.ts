@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CustomError } from 'src/common/errors/customError';
 import { UAParser } from 'ua-parser-js';
 import { QueryAuthDto } from './dto/query-auth.dto';
+import { MailService } from 'src/mail/mail.service';
 
 
 @Injectable()
@@ -20,38 +21,45 @@ export class AuthService {
    constructor(
       private readonly prismaService: PrismaService,
       // private readonly transaction: TransactionHost<TransactionalAdapterPrisma>,
-      private readonly jwtService: JwtService
+      private readonly jwtService: JwtService,
+      private readonly mailService: MailService
    ) { }
-   async create(createAuthDto: CreateAuthDto, userId: string): Promise<ResponseBody> {
+   async create(createAuthDto: CreateAuthDto): Promise<any> {
       try {
-         const { email, firstName, city, country, lastName, state } = createAuthDto;
-         const existUser = await this.prismaService.authUser.findUnique({
-            where: {
-               email
-            }
+         const { email } = createAuthDto;
+         await this.prismaService.$transaction(async (prisma) => {
+            const existUser = await prisma.authUser.findUnique({
+               where: {
+                  email
+               }
+            })
+
+            if (existUser) throw new BadRequestException('User already exist');
+
+            // generate random password
+            const password = this.generateRandomPassword();
+            const { unHashedToken, hashedToken, verificationExpiry } = this.generateVerificationTokens();
+            const user = await prisma.authUser.create({
+               data: {
+                  ...createAuthDto,
+                  // createdBy: userId,
+                  password,
+                  verificationToken: hashedToken,
+                  verificationTokenExpires: verificationExpiry
+               }
+            })
+
+            // send email to verify the password and change it
+            const response = await this.mailService.sendMail({
+               email: user.email,
+               subject: 'To verify your account',
+               mailGenContent: this.mailService.sendAuthVeificationEmail(user.email, `http://localhost:3000/auth/change-password/${unHashedToken}`, password)
+            })
+            if(response.success) return new ResponseBody('User created successfully', user, 201, true);
          })
-
-         if (existUser) throw new BadRequestException('User already exist');
-
-         // generate random password
-         const password = this.generateRandomPassword();
-         const { unHashedToken, hashedToken, verificationExpiry } = this.generateVerificationTokens();
-         const user = await this.prismaService.authUser.create({
-            data: {
-               ...createAuthDto,
-               createdBy: userId,
-               password,
-               verificationToken: hashedToken,
-               verificationTokenExpires: verificationExpiry
-            }
-         })
-
-         // send email to verify the password and change it
-
-
-         return new ResponseBody('User created successfully', user, 201, true);
 
       } catch (error) {
+         console.log("error----->", error);
          throw error
       }
    }

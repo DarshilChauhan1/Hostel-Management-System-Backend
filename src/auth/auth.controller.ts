@@ -15,14 +15,15 @@ export class AuthController {
 
   @ApiBearerAuth()
   @Post('create')
-  create(@Body() createAuthDto: CreateAuthDto, @Req() req: Request) {
-    return this.authService.create(createAuthDto, req['user'].id);
+  create(@Body() createAuthDto: CreateAuthDto) {
+    return this.authService.create(createAuthDto);
   }
 
   @Post('change-password/:token')
   changePassword(@Body() body: { email: string, oldPassword: string, newPassword: string }, @Param('token') token: string) {
     return this.authService.changePassword(body.email, body.oldPassword, body.newPassword, token);
   }
+
 
   // TODO: implement the 2factor authentication 
   @Post('login')
@@ -36,7 +37,7 @@ export class AuthController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Req() req: Request) {
     return this.authService.findOne(id);
   }
 
