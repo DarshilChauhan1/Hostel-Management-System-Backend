@@ -54,6 +54,7 @@ model AuthUser {
   roleId                     String?        @db.Uuid
   role                       Role?          @relation(fields: [roleId], references: [id])
   createdBy                  String?        @db.Uuid
+  refreshToken               String?
   verificationToken          String?
   verificationTokenExpires   DateTime?
   passwordResetToken         String?
@@ -73,19 +74,20 @@ model Role {
 }
 
 model Hostel {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        String     @db.VarChar(255)
-  address     String     @db.VarChar(255)
-  zipcode     String     @db.VarChar(255)
-  city        String     @db.VarChar(255)
-  state       String     @db.VarChar(255)
-  country     String     @db.VarChar(255)
-  contact     String     @db.VarChar(255)
-  createdAt   DateTime   @default(now())
-  hostel_user User?
-  updatedAt   DateTime   @updatedAt
-  createdBy   String?    @db.Uuid
-  Feedback    Feedback[]
+  id             String     @id @default(uuid()) @db.Uuid
+  name           String     @db.VarChar(255)
+  address        String     @db.VarChar(255)
+  zipcode        String     @db.VarChar(255)
+  city           String     @db.VarChar(255)
+  state          String     @db.VarChar(255)
+  country        String     @db.VarChar(255)
+  contact        String     @db.VarChar(255)
+  createdAt      DateTime   @default(now())
+  parentHostelId String?    @db.Uuid
+  hostel_user    User?
+  updatedAt      DateTime   @updatedAt
+  createdBy      String?    @db.Uuid
+  Feedback       Feedback[]
 }
 
 model User {

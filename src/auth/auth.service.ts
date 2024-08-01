@@ -1,17 +1,13 @@
 import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
 import { CreateAuthDto, LoginDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
-import { JwtAuthGuard } from './auth.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TransactionalAdapterPrisma, PrismaTransactionalClient } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import crypto from 'crypto';
 import moment from 'moment';
 import { ResponseBody } from 'src/common/helpers/responseBody';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { CustomError } from 'src/common/errors/customError';
-import { UAParser } from 'ua-parser-js';
+import { CustomError } from 'src/common/errors/customError';;
 import { QueryAuthDto } from './dto/query-auth.dto';
 import { MailService } from 'src/mail/mail.service';
 
@@ -55,7 +51,7 @@ export class AuthService {
                subject: 'To verify your account',
                mailGenContent: this.mailService.sendAuthVeificationEmail(user.email, `http://localhost:3000/auth/change-password/${unHashedToken}`, password)
             })
-            if(response.success) return new ResponseBody('User created successfully', user, 201, true);
+            if (response.success) return new ResponseBody('User created successfully', user, 201, true);
          })
 
       } catch (error) {
@@ -129,7 +125,7 @@ export class AuthService {
          // check if user is blocked, if it is then check if the block time is expired
          if (existUser.isBlocked) {
             const isBlockTimeExpired = moment(existUser.blockedUntil).isBefore(moment());
-            if (!isBlockTimeExpired) throw new CustomError(403, `user is blocked for ${moment(existUser.blockedUntil).diff(moment(), 'hours')} hours`)
+            if (!isBlockTimeExpired) throw new CustomError(403, `user is blocked for ${moment(existUser.blockedUntil).diff(moment().toDate(), 'hours')} hours`)
             // if block time is expired then unblock the user
             await this.prismaService.authUser.update({
                where: {
@@ -171,6 +167,7 @@ export class AuthService {
                   }
                }
             })
+            throw new BadRequestException('Invalid password');
          }
 
          await this.prismaService.authUser.update({
@@ -186,7 +183,6 @@ export class AuthService {
          return new ResponseBody('Login successfully', { accessToken, refreshToken, user: existUser }, 200, true);
 
       } catch (error) {
-         console.log("error----->", error);
          throw error
       }
    }
@@ -220,6 +216,46 @@ export class AuthService {
          throw error
       }
 
+   }
+
+   async refreshToken(oldRefreshToken: string, oldAccessToken: string) {
+      try {
+         // check for the accessToken is correct or not
+         const decodedAccessToken = this.jwtService.verify(oldAccessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
+
+         if (!decodedAccessToken) throw new BadRequestException('Invalid access token');
+
+         // check for the refreshToken is correct or not
+         const decodeRefreshToken = this.jwtService.verify(oldAccessToken, { secret: process.env.REFRESH_TOKEN_SECRET });
+
+         if (!decodeRefreshToken) throw new BadRequestException('Invalid refresh token');
+
+         const { userId } = decodedAccessToken;
+         const user = await this.prismaService.authUser.findUnique({
+            where: {
+               id: userId
+            }
+         })
+         if (!user) throw new BadRequestException('User not found');
+
+         if (user.refreshToken !== oldRefreshToken) throw new BadRequestException('Invalid refresh token');
+
+         // generate new accessToken and rerefreshToken
+         const { accessToken, refreshToken } = await this.generateJwtTokens(userId);
+         await this.prismaService.authUser.update({
+            where: {
+               id: userId
+            },
+            data: {
+               refreshToken
+            }
+         })
+
+         return new ResponseBody('Token refreshed successfully', { accessToken, refreshToken }, 200, true);
+
+      } catch (error) {
+         throw error
+      }
    }
 
    update(id: number, updateAuthDto: UpdateAuthDto) {

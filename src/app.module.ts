@@ -9,10 +9,11 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 import { PrismaService } from './prisma/prisma.service';
 import { MailModule } from './mail/mail.module';
 import { RolesModule } from './roles/roles.module';
+import { HostelModule } from './hostel/hostel.module';
 
 
 @Module({
-  imports: [AuthModule, PrismaModule, MailModule, RolesModule,
+  imports: [AuthModule, PrismaModule, MailModule, RolesModule, HostelModule,
     // ClsModule.forRoot({
     //   plugins: [
     //     new ClsPluginTransactional({

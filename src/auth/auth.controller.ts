@@ -31,6 +31,11 @@ export class AuthController {
     return this.authService.login(payload, req.headers['user-agent']);
   }
 
+  @Post('refresh-token')
+  refreshToken(@Body() body: { refreshToken: string, accessToken: string }) {
+    return this.authService.refreshToken(body.refreshToken, body.accessToken);
+  }
+
   @Get('all')
   findAll(@Query() query: QueryAuthDto ) {
     return this.authService.findAll(query);
