@@ -33,6 +33,29 @@ enum ProfessionStatus {
   INTERN
 }
 
+enum HostelStatus {
+  PENDING
+  ACTIVE
+  MANTIENANCE
+  CLOSED
+}
+
+enum RoomStatus {
+  ACTIVE
+  MANTIENANCE
+  PENDING
+  CLOSED
+}
+
+enum HostelType {
+  STUDENT
+  PAYING_GUEST
+  CORPORATE
+  COMMUNITY
+  CASTE
+  OTHERS
+}
+
 model AuthUser {
   id                         String         @id @default(uuid()) @db.Uuid
   email                      String         @unique
@@ -61,6 +84,7 @@ model AuthUser {
   passwordResetTokenExpires  DateTime?
   forgotPasswordToken        String?
   forgotPasswordTokenExpires DateTime?
+  hostel                     Hostel[]
 }
 
 model Role {
@@ -74,20 +98,41 @@ model Role {
 }
 
 model Hostel {
-  id             String     @id @default(uuid()) @db.Uuid
-  name           String     @db.VarChar(255)
-  address        String     @db.VarChar(255)
-  zipcode        String     @db.VarChar(255)
-  city           String     @db.VarChar(255)
-  state          String     @db.VarChar(255)
-  country        String     @db.VarChar(255)
-  contact        String     @db.VarChar(255)
-  createdAt      DateTime   @default(now())
-  parentHostelId String?    @db.Uuid
+  id             String       @id @default(uuid()) @db.Uuid
+  name           String       @db.VarChar(255)
+  address        String       @db.VarChar(255)
+  zipcode        String       @db.VarChar(255)
+  city           String       @db.VarChar(255)
+  state          String       @db.VarChar(255)
+  country        String       @db.VarChar(255)
+  status         HostelStatus @default(PENDING)
+  hostelType     HostelType
+  rooms          Int          @default(0)
+  occupation     Int          @default(0)
+  isBranch       Boolean      @default(false)
+  parentHostelId String?      @db.Uuid
   hostel_user    User?
-  updatedAt      DateTime   @updatedAt
-  createdBy      String?    @db.Uuid
+  Rooms          HostelRoom[]
+  createdBy      String       @db.Uuid
+  authUser       AuthUser     @relation(fields: [createdBy], references: [id])
+  assignedTo     String?      @db.Uuid
   Feedback       Feedback[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model HostelRoom {
+  id           String     @id @default(uuid()) @db.Uuid
+  roomNo       Int        @default(0) @db.Integer
+  roomCapacity Int        @default(0) @db.Integer
+  occupied     Int        @default(0) @db.Integer
+  price        Float      @default(0)
+  hostelId     String     @db.Uuid
+  status       RoomStatus @default(PENDING)
+  User         User[]
+  hostel       Hostel     @relation(fields: [hostelId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model User {
@@ -101,9 +146,11 @@ model User {
   status       UserStatus @default(PENDING)
   roleId       String     @db.Uuid
   role         Role       @relation(fields: [roleId], references: [id])
+  room         HostelRoom @relation(fields: [hostelRoomId], references: [id])
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   isVerified   Boolean    @default(false)
+  hostelRoomId String     @db.Uuid
 }
 
 model Profile {

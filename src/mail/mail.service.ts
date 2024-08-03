@@ -55,7 +55,6 @@ export class MailService {
     }
 
     sendAuthVeificationEmail(email: string, link: string, password: string) {
-        console.log(link)
         return {
             body: {
                 name: email,

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto, LoginDto } from './dto/create-auth.dto';
+import { CreateAuthDto, LoginDto, ResendEmailDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtAuthGuard } from './auth.guard';
 import { Request } from 'express';
@@ -29,6 +29,11 @@ export class AuthController {
   @Post('login')
   login(@Body() payload: LoginDto, @Req() req: Request) {
     return this.authService.login(payload, req.headers['user-agent']);
+  }
+
+  @Post('resend-mail')
+  resendMail(@Body() payload: ResendEmailDto) {
+    return this.authService.resendMail(payload);
   }
 
   @Post('refresh-token')

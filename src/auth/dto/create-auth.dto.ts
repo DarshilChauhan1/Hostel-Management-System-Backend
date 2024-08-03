@@ -50,3 +50,10 @@ export class LoginDto{
     @IsNotEmpty()
     password : string;
 }
+
+export class ResendEmailDto{
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    email : string
+}

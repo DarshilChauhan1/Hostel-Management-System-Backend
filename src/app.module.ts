@@ -10,10 +10,11 @@ import { PrismaService } from './prisma/prisma.service';
 import { MailModule } from './mail/mail.module';
 import { RolesModule } from './roles/roles.module';
 import { HostelModule } from './hostel/hostel.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 
 @Module({
-  imports: [AuthModule, PrismaModule, MailModule, RolesModule, HostelModule,
+  imports: [AuthModule, PrismaModule, MailModule, RolesModule, HostelModule, RoomsModule,
     // ClsModule.forRoot({
     //   plugins: [
     //     new ClsPluginTransactional({

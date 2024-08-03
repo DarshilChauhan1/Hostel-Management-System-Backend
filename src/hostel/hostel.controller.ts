@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { HostelService } from './hostel.service';
 import { CreateHostelDto } from './dto/create-hostel.dto';
 import { UpdateHostelDto } from './dto/update-hostel.dto';
@@ -8,8 +8,8 @@ export class HostelController {
   constructor(private readonly hostelService: HostelService) {}
 
   @Post('register')
-  create(@Body() createHostelDto: CreateHostelDto) {
-    return this.hostelService.create(createHostelDto);
+  create(@Body() createHostelDto: CreateHostelDto, @Req() request : Request) {
+    return this.hostelService.create(createHostelDto, request['user'].id);
   }
 
   @Get()
