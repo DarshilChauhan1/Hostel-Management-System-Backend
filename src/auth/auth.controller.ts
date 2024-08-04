@@ -6,7 +6,7 @@ import { JwtAuthGuard } from './auth.guard';
 import { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryAuthDto } from './dto/query-auth.dto';
-import { ResponseInterceptor } from 'src/common/helpers/responseBody';
+import { ResponseInterceptor } from 'src/common/interceptors/responseInterceptor';
 
 
 @ApiTags('Auth User Apis')
