@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreateHostelDto } from './dto/create-hostel.dto';
 import { UpdateHostelDto } from './dto/update-hostel.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -21,6 +21,7 @@ export class HostelService {
             parentHostelId: null
           }
         })
+        if(!mainHostel) throw new BadRequestException('Main Hostel Not Found')
 
         // now create the branched hostel
         const branchedHostel = await this.prismaService.hostel.create({

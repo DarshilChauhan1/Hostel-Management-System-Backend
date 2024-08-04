@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
-import { CreateAuthDto, LoginDto, ResendEmailDto } from './dto/create-auth.dto';
+import { CreateAuthDto, LoginDto, RefreshTokenDto, ResendEmailDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import crypto from 'crypto';
@@ -216,8 +216,9 @@ export class AuthService {
 
    }
 
-   async refreshToken(oldRefreshToken: string, oldAccessToken: string) {
+   async refreshToken(payload: RefreshTokenDto) {
       try {
+         const { oldAccessToken, oldRefreshToken } = payload
          // check for the accessToken is correct or not
          const decodedAccessToken = this.jwtService.verify(oldAccessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
 
@@ -268,7 +269,7 @@ export class AuthService {
             }
          })
 
-         if (findUser) throw new BadRequestException('User not found or already verified');
+         if (!findUser) throw new BadRequestException('User not found or already verified');
 
          const { unHashedToken, hashedToken, verificationExpiry } = this.generateVerificationTokens();
          console.log(unHashedToken)
@@ -293,7 +294,7 @@ export class AuthService {
             mailGenContent: this.mailService.sendAuthVeificationEmail(email, `http://localhost:3000/auth/change-password/${unHashedToken}`, generateRandomPassword)
          })
 
-         if (response.success) return new ResponseBody('Email sent successfully', null, 200, true);
+         if (response.success) return new ResponseBody('Email sent successfully', null, 201, true);
       } catch (error) {
          console.log("error----->", error);
          throw error

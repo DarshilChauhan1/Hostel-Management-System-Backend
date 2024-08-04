@@ -26,7 +26,7 @@ export class MailService {
             host: "smtp.ethereal.email",
             service : 'gmail',
             port: 587,
-            secure: false,
+            secure: true,
             auth: {
                 user: process.env.MAIL_SMTP_USER,
                 pass: process.env.MAIL_SMTP_PASSWORD
@@ -63,7 +63,7 @@ export class MailService {
                     instructions: 'To verify your account, please click here:',
                     button: {
                         color: '#22BC66',
-                        text: 'Verify your account, Here is the Auto generated password: ' + password + 'Click on the link to verify your account',
+                        text: 'Verify your account',
                         link: link
                     }
                 },

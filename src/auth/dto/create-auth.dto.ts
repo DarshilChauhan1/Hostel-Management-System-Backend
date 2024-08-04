@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class CreateAuthDto {
     @ApiProperty()
@@ -33,7 +33,7 @@ export class CreateAuthDto {
     country : string;
 
     @ApiProperty()
-    @IsString()
+    @IsUUID()
     @IsNotEmpty()
     roleId : string;
 }
@@ -56,4 +56,16 @@ export class ResendEmailDto{
     @IsString()
     @IsNotEmpty()
     email : string
+}
+
+export class RefreshTokenDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    oldRefreshToken : string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    oldAccessToken : string;
 }
