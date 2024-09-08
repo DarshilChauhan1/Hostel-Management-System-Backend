@@ -3,11 +3,11 @@ import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "c
 
 
 export enum HostelType {
-    STUDENT = 'STUDENT',
-    PAYING_GUEST = 'PAYING_GUEST',
-    CORPORATE = 'CORPORATE',
-    CASTE = 'CASTE',
-    OTHERS = 'OTHERS'
+    STUDENT = 'student',
+    PAYING_GUEST = 'paying_guest',
+    CORPORATE = 'corporate',
+    CASTE = 'caste',
+    GENERAL = 'general'
   }
 export class CreateHostelDto {
     @ApiProperty()

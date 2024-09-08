@@ -33,6 +33,11 @@ export class AuthController {
   login(@Body() payload: LoginDto, @Req() req: Request) {
     return this.authService.login(payload, req.headers['user-agent']);
   }
+  
+  @Post('verify-2FA')
+  verify2FA(@Body() payload: { userId: string, token: string }) {
+    return this.authService.verify2FA(payload);
+  }
 
   // @UseGuards(JwtAuthGuard)
   @Post('resend-mail')

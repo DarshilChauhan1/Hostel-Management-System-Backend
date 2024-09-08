@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { CustomError } from 'src/common/errors/customError';;
 import { QueryAuthDto } from './dto/query-auth.dto';
 import { MailService } from 'src/mail/mail.service';
+import * as speakeasy from '@levminer/speakeasy';
+import * as qr from 'qrcode';
 
 
 @Injectable()
@@ -81,6 +83,8 @@ export class AuthService {
 
          const newHashedPassword = await bcrypt.hash(newPassword, 12);
 
+         const { accessToken, refreshToken } = await this.generateJwtTokens(existUser.id);
+
          await this.prismaService.authUser.update({
             where: {
                id: existUser.id
@@ -88,6 +92,7 @@ export class AuthService {
             data: {
                password: newHashedPassword,
                isVerified: true,
+               refreshToken, 
                verificationToken: null,
                verificationTokenExpires: null
             }
@@ -99,7 +104,6 @@ export class AuthService {
             }
          })
 
-         const { accessToken, refreshToken } = await this.generateJwtTokens(existUser.id);
          return new ResponseBody('Password changed successfully', { accessToken, refreshToken, user: newUser }, 200, true);
 
       } catch (error) {
@@ -123,7 +127,7 @@ export class AuthService {
          // check if user is blocked, if it is then check if the block time is expired
          if (existUser.isBlocked) {
             const isBlockTimeExpired = moment(existUser.blockedUntil).isBefore(moment());
-            if (!isBlockTimeExpired) throw new CustomError(403, `user is blocked for ${moment(existUser.blockedUntil).diff(moment().toDate(), 'hours')} hours`)
+            if (!isBlockTimeExpired) throw new CustomError(403, `you are blocked for ${moment(existUser.blockedUntil).diff(moment().toDate(), 'hours')} hours`)
             // if block time is expired then unblock the user
             await this.prismaService.authUser.update({
                where: {
@@ -136,6 +140,8 @@ export class AuthService {
                   blockedUntil: null
                }
             })
+
+            return new ResponseBody('User logged in successfully', existUser, 200, true);
          }
 
          // if login attempt is more than 5 block the user for 24 hours
@@ -150,7 +156,7 @@ export class AuthService {
                   blockedUntil: moment().add(24, 'hours').toISOString()
                }
             })
-            throw new CustomError(403, `user is blocked for ${moment(existUser.blockedUntil).diff(moment(), 'hours')} hours`)
+            throw new CustomError(403, `user is blocked for ${moment(existUser.blockedUntil).diff(moment(), 'hours')} hours due to multiple login attempts`)
          }
 
          const isPasswordValid = await bcrypt.compare(password, existUser.password);
@@ -168,6 +174,21 @@ export class AuthService {
             throw new BadRequestException('Invalid password');
          }
 
+         // lastly check for user if 2FA is enabled
+         if(existUser.twoFactorEnabled) {
+            const secret = speakeasy.generateSecret({length : 20})
+            await this.prismaService.authUser.update({
+               where: {
+                  id: existUser.id
+               },
+               data: {
+                  twoFactorSecret: secret.base32
+               }
+            })
+            const QrCode = await qr.toDataURL(secret.otpauth_url);
+            return new ResponseBody('2FA code generated successfully', { secret: secret.base32, url : QrCode }, 200, true);
+         }
+
          await this.prismaService.authUser.update({
             where: {
                id: existUser.id
@@ -180,6 +201,31 @@ export class AuthService {
          const { accessToken, refreshToken } = await this.generateJwtTokens(existUser.id);
          return new ResponseBody('Login successfully', { accessToken, refreshToken, user: existUser }, 200, true);
 
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async verify2FA(payload: { userId: string, token: string }) {
+      try {
+         const { userId, token } = payload;
+         const user = await this.prismaService.authUser.findUnique({
+            where: {
+               id: userId
+            }
+         })
+
+         if (!user) throw new BadRequestException('User not found');
+
+         const isTokenValid = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token
+         })
+
+         if (!isTokenValid) throw new BadRequestException('Invalid token');
+
+         return new ResponseBody('2FA verified successfully', null, 200, true);
       } catch (error) {
          throw error
       }

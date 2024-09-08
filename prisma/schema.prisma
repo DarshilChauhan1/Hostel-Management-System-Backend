@@ -51,9 +51,8 @@ enum HostelType {
   STUDENT
   PAYING_GUEST
   CORPORATE
-  COMMUNITY
   CASTE
-  OTHERS
+  GENERAL
 }
 
 model AuthUser {
@@ -72,11 +71,13 @@ model AuthUser {
   isVerified                 Boolean?       @default(false)
   devicesLoggedIn            String[]
   status                     AuthUserStatus @default(PENDING)
-  createdAt                  DateTime       @default(now())
-  updatedAt                  DateTime       @updatedAt
-  roleId                     String?        @db.Uuid
-  role                       Role?          @relation(fields: [roleId], references: [id])
-  createdBy                  String?        @db.Uuid
+  twoFactorEnabled           Boolean        @default(false)
+  twoFactorSecret            String?
+  roleId                     String         @db.Uuid
+  role                       Role           @relation(fields: [roleId], references: [id])
+  createdById                String?        @db.Uuid
+  createdBy                  AuthUser?      @relation("createdById", fields: [createdById], references: [id])
+  createdUsers               AuthUser[]     @relation("createdById")
   refreshToken               String?
   verificationToken          String?
   verificationTokenExpires   DateTime?
@@ -85,6 +86,8 @@ model AuthUser {
   forgotPasswordToken        String?
   forgotPasswordTokenExpires DateTime?
   hostel                     Hostel[]
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
 }
 
 model Role {

@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@levminer/speakeasy": "^1.4.2",
     "@nestjs-cls/transactional": "^2.4.0",
     "@nestjs-cls/transactional-adapter-prisma": "^1.2.2",
     "@nestjs/common": "^10.0.0",
@@ -37,6 +38,7 @@
     "moment": "^2.30.1",
     "nestjs-cls": "^4.3.0",
     "nodemailer": "^6.9.14",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "ua-parser-js": "^1.0.38"
