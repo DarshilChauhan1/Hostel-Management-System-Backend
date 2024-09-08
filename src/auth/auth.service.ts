@@ -114,6 +114,7 @@ export class AuthService {
 
    async login(payload: LoginDto, userDeviceInfo: string): Promise<ResponseBody> {
       const { email, password } = payload;
+      console.log('hello')
       try {
          const existUser = await this.prismaService.authUser.findUnique({
             where: {
