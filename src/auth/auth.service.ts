@@ -105,6 +105,8 @@ export class AuthService {
 
    async login(payload: LoginDto, userDeviceInfo: string): Promise<ResponseBody> {
       const { email, password } = payload;
+      console.log('hello')
+      console.log('hello2')
       try {
          const findUser = await this.findOneUser({ email, isVerified: true });
 
