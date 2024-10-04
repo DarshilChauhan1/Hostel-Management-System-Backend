@@ -116,7 +116,7 @@ model Hostel {
   parentHostelId String?      @db.Uuid
   hostel_user    User?
   Rooms          HostelRoom[]
-  createdBy      String       @db.Uuid
+  createdBy      String       @db.Uuid()
   authUser       AuthUser     @relation(fields: [createdBy], references: [id])
   assignedTo     String?      @db.Uuid
   Feedback       Feedback[]
@@ -140,6 +140,7 @@ model HostelRoom {
 
 model User {
   id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
   enrollNumber String     @db.VarChar(255)
   password     String     @db.VarChar(255)
   hostel       Hostel     @relation(fields: [hostelId], references: [id])

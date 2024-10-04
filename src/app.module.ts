@@ -11,10 +11,11 @@ import { MailModule } from './mail/mail.module';
 import { RolesModule } from './roles/roles.module';
 import { HostelModule } from './hostel/hostel.module';
 import { RoomsModule } from './rooms/rooms.module';
+import { UsersModule } from './users/users.module';
 
 
 @Module({
-  imports: [AuthModule, PrismaModule, MailModule, RolesModule, HostelModule, RoomsModule,
+  imports: [AuthModule, PrismaModule, MailModule, RolesModule, HostelModule, RoomsModule, UsersModule,
     // ClsModule.forRoot({
     //   plugins: [
     //     new ClsPluginTransactional({
